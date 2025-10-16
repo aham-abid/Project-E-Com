@@ -28,100 +28,79 @@
 
     <div class="header-right">
       <button id="langToggle" class="icon-btn">English</button>
-      <button id="themeToggle" class="icon-btn">🌙</button>
-      <button id="adminToggle" class="icon-btn" style="display: none;">🛠️</button>
+      <button id="themeToggle" class="icon-btn">☀️/🌙</button>
+      <button id="cartFloating" class="cart-btn icon-btn">
+        🛒 <span id="cartCount">0</span>
+      </button>
     </div>
   </header>
 
   <main>
-    <div class="hero">
-      <div class="hero-left">
-        <h1>আজকের তাজা বাজার!</h1>
-        <p>আমরা বিশ্বাস করি গুণমানে, তাই আপনার জন্য সেরা পণ্যগুলি নিয়ে আসি সরাসরি উৎপাদকের কাছ থেকে।</p>
-        <div class="hero-ctas">
-          <a href="#" class="btn-primary" onclick="openCart()">কার্ট দেখুন <span id="cartCount" class="cart-count">0</span></a>
-          <div class="trust">✅ শতভাগ খাঁটি | 🚚 দ্রুত হোম ডেলিভারি</div>
-        </div>
+    <div id="categoryList" class="category-filter">
       </div>
-    </div>
-
-    <div class="categories">
-        <h3>Filter by Category:</h3>
-        <div id="categoryList" class="category-list">
-            </div>
-    </div>
-
-    <div class="products">
-      <h2>Featured Products</h2>
-      <div id="productGrid" class="product-grid">
-        </div>
-    </div>
+    
+    <div id="productGrid" class="product-grid">
+      </div>
   </main>
 
   <footer class="site-footer">
-    <div>
-        &copy; 2025 Climax Online Shop. All rights reserved.
-    </div>
-    <div>
-        <a href="https://wa.me/8801897547953" target="_blank">Contact on WhatsApp</a>
-    </div>
+    © 2024 Climax Online Shop. Powered by <a href="#" target="_blank">A.H.M Zubaer</a>.
   </footer>
 
-  <button id="cartFloating" class="cart-floating">
-    Cart (<span id="cartCountFooter">0</span>)
-  </button>
-
-  <div id="cartPopup" class="popup" aria-hidden="true">
+  <div id="cartPopup" class="popup-overlay" aria-hidden="true">
     <div class="popup-panel">
       <div class="popup-header">
-        <span>🛒 Your Cart</span>
+        <span>🛒 Your Cart (<span id="cartCountFooter">0</span> items)</span>
         <button id="closeCart">✕</button>
       </div>
-      <div class="cart-items" id="cartItems">
-        </div>
-      <div class="cart-total" id="cartTotalBlock">
-        </div>
-      
-      <textarea id="cartNote" placeholder="Delivery Address / Order Note"></textarea>
-      
-      <button id="confirmOrder" class="whatsapp-btn">
-        <span class="wa-icon">🟢</span> Send Order via WhatsApp
-      </button>
-      <button id="cancelOrder" class="btn-secondary" onclick="closeCart()">Cancel</button>
+      <div class="popup-content">
+        <div id="cartItems" class="cart-items">
+          </div>
+        <div id="cartTotalBlock" style="padding-top:10px;border-top:1px solid var(--border);margin-top:10px;">
+          </div>
+        <textarea id="cartNote" rows="3" placeholder="Add Note / Delivery Address..."></textarea>
+      </div>
+      <div class="popup-footer">
+        <button id="confirmOrder" class="btn-primary">✅ Confirm Order via WhatsApp</button>
+      </div>
     </div>
   </div>
 
-  <div id="adminPanel" class="admin-panel" style="display: none;">
-    <div class="popup-header" style="cursor: grab;">
-        <h4>🛠️ Add New Product</h4>
-        <button id="adminClose" style="color: var(--danger); font-size: 1.2em;">✕</button>
-    </div>
-    <input id="admin_name_bn" placeholder="Name (বাংলা, e.g. আলু)" />
-    <input id="admin_name_en" placeholder="Name (English, e.g. Potato)" />
-    <input type="number" step="0.01" min="1" id="admin_price" placeholder="Price (৳/kg)" />
-    <input type="number" step="1" min="1" id="admin_min_qty" placeholder="Min Qty (kg, Default 1)" value="1" />
-    
-    <label class="upload-label">
-        🖼️ Upload Image (Best Option):
-        <input type="file" id="admin_image_file" accept="image/*" onchange="adminImageChanged(event)" />
-    </label>
-    
-    <img id="admin_image_preview" style="width:100%;border-radius:10px;display:none;margin-top:8px;" />
-    
-    <select id="admin_category">
-        <option value="সবজি">সবজি</option>
-        <option value="মশলা">মশলা</option>
-        <option value="ডাল">ডাল</option>
-        <option value="চিনি">চিনি</option>
-        <option value="অন্যান্য">অন্যান্য</option>
-    </select>
+  <div id="adminPanel" class="popup-overlay admin-panel" style="display: none;">
+    <div class="popup-panel admin-form-panel">
+      <div class="popup-header">
+        <h4>🔐 Admin — Add New Product</h4>
+        <button id="adminClose">✕</button>
+      </div>
+      
+      <div class="popup-content">
+        <input id="admin_name_bn" placeholder="Name (বাংলা)" />
+        <input id="admin_name_en" placeholder="Name (English, Optional)" />
+        <input type="number" step="0.01" min="1" id="admin_price" placeholder="Price (৳/kg)" />
+        <input type="number" step="1" min="1" id="admin_min_qty" value="1" placeholder="Min Qty (kg, Default 1)" />
 
-    <div class="admin-actions" id="adminPanelFooter">
-        <button id="adminAddBtn" class="btn-primary" style="flex-grow: 1;">+ Add Product</button>
-        </div>
+        <select id="admin_category">
+            <option value="সবজি">সবজি</option>
+            <option value="মশলা">মশলা</option>
+            <option value="ডাল">ডাল</option>
+            <option value="চিনি">চিনি</option>
+            <option value="অন্যান্য">অন্যান্য</option>
+        </select>
+        
+        <label class="upload-label">
+            🖼️ Upload Image (Required):
+            <input type="file" id="admin_image_file" accept="image/*" />
+        </label>
+        <img id="admin_image_preview" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;display:none;margin-top:8px;" />
+      </div>
+
+      <div class="popup-footer" id="adminPanelFooter">
+        <button id="adminAddBtn" class="btn-primary">+ Add Product</button>
+      </div>
+    </div>
   </div>
 
-  <div id="productEditPopup" class="popup" aria-hidden="true">
+  <div id="productEditPopup" class="popup-overlay admin-edit-panel" aria-hidden="true">
     <div class="popup-panel admin-edit-panel">
       <div class="popup-header">
         <span>✏️ Admin — Edit Product</span>
@@ -131,18 +110,19 @@
       <div class="popup-content">
         <input type="hidden" id="edit_product_id" />
         <input id="edit_name_bn" placeholder="Name (বাংলা)" />
-        <input id="edit_name_en" placeholder="Name (English)" />
+        <input id="edit_name_en" placeholder="Name (English, Optional)" />
         <input type="number" step="0.01" min="1" id="edit_price" placeholder="Price (৳/kg)" />
         <input type="number" step="1" min="1" id="edit_min_qty" placeholder="Min Qty (kg, Default 1)" />
         
-        <input id="edit_image_url" placeholder="Paste Direct Image URL (e.g. Imgur, i.ibb.co)" oninput="editImageUrlChanged()" />
-        
         <label class="upload-label">
-            🖼️ OR Upload New Image (Base64 Fallback):
-            <input type="file" id="edit_image_file" accept="image/*" onchange="editImageChanged(event)" />
+            🔗 Image URL (Optional):
+            <input type="text" id="edit_image_url" placeholder="Paste image URL here" />
         </label>
-
-        <img id="edit_image_preview" style="width:100%;border-radius:10px;display:none;margin-top:8px;" />
+        <label class="upload-label">
+            🖼️ Upload New Image (Optional):
+            <input type="file" id="edit_image_file" accept="image/*" />
+        </label>
+        <img id="edit_image_preview" style="width:100%;max-height:200px;object-fit:cover;border-radius:10px;display:none;margin-top:8px;" />
 
         <select id="edit_category">
             <option value="সবজি">সবজি</option>
@@ -152,10 +132,10 @@
             <option value="অন্যান্য">অন্যান্য</option>
         </select>
       </div>
-      
-      <div class="admin-actions">
-        <button id="editSaveBtn" class="btn-primary" style="flex-grow: 1;">Save Changes</button>
+
+      <div class="popup-footer">
         <button id="editCancelBtn" class="btn-secondary">Cancel</button>
+        <button id="editSaveBtn" class="btn-primary">Save Changes</button>
       </div>
     </div>
   </div>

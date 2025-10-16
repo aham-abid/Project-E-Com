@@ -1,4 +1,4 @@
-// FINAL fixed script.js (V6 - Hybrid Image Input with Base64 File Upload)
+// FINAL fixed script.js (V8 - Admin Add Fix)
 (() => {
   const WA_PHONE = "8801897547953"; 
 
@@ -10,11 +10,11 @@
   let lang = localStorage.getItem("lang") || "bn";
   let isAdmin = sessionStorage.getItem("isAdmin") === "true";
 
-  let selectedCategory = "সব"; 
+  let selectedCategory = " সব"; 
 
   // Image data holders for Base64 during Admin Add/Edit process
   let adminNewImage = null; 
-  let editNewImage = null;
+  let editNewImage = null; 
 
   // fallback default products if none
   if (!products || products.length === 0) {
@@ -94,20 +94,34 @@
   function adminImageChanged(event) {
     const file = event.target.files[0];
     const preview = qs("admin_image_preview");
+    const addBtn = qs("adminAddBtn"); // Reference the add button
     
     if (file) {
+      // Disable button and show loading text while reading file
+      if (addBtn) addBtn.textContent = (lang === "bn") ? "ছবি লোড হচ্ছে..." : "Image loading...";
+      if (addBtn) addBtn.disabled = true;
+
       readFileAsBase64(file).then(base64 => {
-        adminNewImage = base64;
+        adminNewImage = base64; // Set global variable on success
         preview.src = base64;
         preview.style.display = "block";
+        // Re-enable button on success
+        if (addBtn) addBtn.textContent = (lang === "bn") ? "+ Add Product" : "+ Add Product"; 
+        if (addBtn) addBtn.disabled = false;
       }).catch(() => {
         alert("Could not read file.");
         adminNewImage = null;
         preview.style.display = "none";
+        // Re-enable button on failure
+        if (addBtn) addBtn.textContent = (lang === "bn") ? "+ Add Product" : "+ Add Product"; 
+        if (addBtn) addBtn.disabled = false;
       });
     } else {
       adminNewImage = null;
       preview.style.display = "none";
+      // Ensure button is enabled if file is cleared
+      if (addBtn) addBtn.textContent = (lang === "bn") ? "+ Add Product" : "+ Add Product";
+      if (addBtn) addBtn.disabled = false;
     }
   }
 
@@ -121,7 +135,8 @@
         preview.src = base64;
         preview.style.display = "block";
         // Clear the URL input to ensure Base64 takes priority on save
-        qs("edit_image_url").value = ""; 
+        const urlInput = qs("edit_image_url");
+        if (urlInput) urlInput.value = ""; 
       }).catch(() => {
         alert("Could not read file.");
         editNewImage = null;
@@ -145,7 +160,7 @@
     }
     
     const url = urlInput.value.trim();
-    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
+    if (url && (url.startsWith('http') || url.startsWith('https') || url.startsWith('data:'))) {
         preview.src = url;
         preview.style.display = "block";
     } else if (!url) {
@@ -289,7 +304,7 @@
     toast((lang === "bn") ? "🗑️ পণ্যটি মুছে ফেলা হয়েছে" : "Product removed");
   }
 
-  // ADMIN EDIT LOGIC (UPDATED for HYBRID input)
+  // ADMIN EDIT LOGIC (FIXED)
   function closeEdit() {
     const popup = qs("productEditPopup");
     if (popup) {
@@ -347,6 +362,8 @@
         finalImage = imageURL; // Priority 2: New URL pasted
     }
     
+    // --- VALIDATION AND ASSIGNMENT ---
+    
     if (!bn || isNaN(pr) || pr <= 0) {
         alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
         return;
@@ -365,7 +382,7 @@
     p.price = pr;
     p.min_qty = minQty;
     p.category = cat;
-    p.image = finalImage; 
+    p.image = finalImage; // Save the determined image source to the product object
 
     finalizeSave();
   }
@@ -395,6 +412,7 @@
     const urlInput = qs("edit_image_url");
     if (urlInput) {
         const isUrl = p.image && (p.image.startsWith('http') || p.image.startsWith('https'));
+        // If it's a URL, display it in the URL box; otherwise, it's Base64, so leave the box blank.
         urlInput.value = isUrl ? p.image : "";
     }
 
@@ -594,7 +612,7 @@
     if (!bn || isNaN(pr) || pr <= 0) return alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
     if (isNaN(minQty) || minQty <= 0) return alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
     
-    if (!imageSrc) return alert((lang === "bn") ? "ছবি আপলোড করুন" : "Please upload an image.");
+    if (!imageSrc) return alert((lang === "bn") ? "ছবি আপলোড করুন" : "Please upload an image."); // This is the check that fails if file reading is slow
 
     const id = Date.now();
 
