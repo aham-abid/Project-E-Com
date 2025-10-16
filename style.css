@@ -443,8 +443,13 @@ body.dark-mode .card {
   padding: 12px 0;
 }
 
+.cart-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
 .cart-item input[type="number"] {
-    width: 80px !important;
+    width: 60px !important; /* Adjusted for better fit with new buttons */
     padding: 6px;
     border-radius: 6px;
     border: 1px solid var(--border);
@@ -452,6 +457,26 @@ body.dark-mode .card {
     background: var(--bg); 
     color: var(--text);
     font-weight: 600;
+}
+.cart-qty-controls .qty-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 4px;
+    line-height: 1;
+    font-size: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+.cart-qty-controls .remove-btn {
+    padding: 4px 8px;
+    margin-left: 5px;
+    font-size: 0.8em;
 }
 
 .cart-total {
@@ -502,12 +527,31 @@ body.dark-mode .card {
     font-family: inherit; 
 }
 
-/* --- ADMIN PANEL INPUT IMPROVEMENT (Added/Updated) --- */
+/* --- ADMIN PANEL INPUT IMPROVEMENT --- */
 
-/* Ensures the new Image URL input is consistently styled and appears */
+/* Explicitly style the Image URL input in the Admin Add panel */
 .admin-panel input#admin_image_url {
     margin-top: 10px; 
     margin-bottom: 10px;
+}
+
+/* Explicitly style the new Image URL input in the Admin Edit panel */
+.admin-edit-panel input#edit_image_url {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    box-sizing: border-box; 
+    font-family: inherit; 
+}
+
+/* Hides the old file upload labels in both panels now that we use URL inputs */
+.admin-panel .upload-label,
+.admin-edit-panel .upload-label {
+    display: none; 
 }
 
 /* Ensures Price and Minimum Quantity fields align numbers to the right */
@@ -523,7 +567,7 @@ body.dark-mode .card {
     min-height: 80px;
 }
 
-/* Ensure number inputs are styled correctly (FIXED LINTER ERROR) */
+/* Ensure number inputs are styled correctly (Hiding Spinners) */
 input[type="number"] {
     -moz-appearance: textfield; /* Firefox */
     appearance: textfield; /* Standard property for Firefox fix */
@@ -536,36 +580,19 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 
-.admin-panel .upload-label,
-.admin-edit-panel .upload-label {
-    display: block;
-    padding: 10px;
-    border: 1px dashed var(--muted);
-    border-radius: 6px;
-    cursor: pointer;
-    text-align: center;
-    margin-top: 10px;
-    background: var(--card-bg);
-}
-
-.admin-panel input[type="file"],
-.admin-edit-panel input[type="file"] {
-    display: none;
-}
-
 /* Fix for Admin Actions layout and JS-added logout button */
 .admin-actions {
     display: flex;
-    flex-wrap: wrap; /* Allows buttons to wrap and stack */
+    flex-wrap: wrap; 
     justify-content: space-between; 
     gap: 10px;
     margin-top: 15px;
 }
 
-/* Explicitly target the JS-added logout button (if needed, but flex-wrap should handle it) */
+/* Explicitly target the JS-added logout button */
 #adminLogoutBtn {
-    width: 100%; /* Force the logout button to take a new row for better separation */
-    margin-top: 8px; /* Maintain small separation from other buttons */
+    width: 100%; 
+    margin-top: 8px; 
 }
 
 
@@ -638,7 +665,7 @@ body.dark-mode .site-footer {
       left: 5%;
       right: 5%;
       margin: 0 auto;
-      transform: none !important; /* Disable JS transform for fixed position */
+      transform: none !important; 
       cursor: default; 
   }
   .site-footer {

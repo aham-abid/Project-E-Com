@@ -1,4 +1,4 @@
-// FINAL fixed script.js (V3 - URL Input for Admin Add)
+// FINAL fixed script.js (V4 - URL Input for BOTH Admin Add & Admin Edit)
 (() => {
   const WA_PHONE = "8801897547953"; 
 
@@ -10,7 +10,6 @@
   let lang = localStorage.getItem("lang") || "bn";
   let isAdmin = sessionStorage.getItem("isAdmin") === "true";
 
-  // NEW STATE: To track the currently selected category for filtering and 'active' class
   let selectedCategory = "সব"; 
 
   // fallback default products if none
@@ -33,6 +32,8 @@
 
   /**
    * Saves data to localStorage and handles QuotaExceededError.
+   * NOTE: This will only fail if non-image-URL data (cart, lang) grows too big, 
+   * but the safety check remains good practice.
    * @returns {boolean} True if save was successful, false otherwise.
    */
   function saveAll() {
@@ -43,7 +44,7 @@
       return true;
     } catch (e) {
       if (e.name === 'QuotaExceededError') {
-        alert((lang === "bn") ? "ত্রুটি: ডেটা সংরক্ষণের জায়গা পূর্ণ। এটি সাধারণত বড় ছবি আপলোড করার কারণে হয়। অনুগ্রহ করে External Image URL ব্যবহার করুন।" : "Error: Local storage limit reached. This usually happens when uploading large images. Please use an External Image URL.");
+        alert((lang === "bn") ? "ত্রুটি: ডেটা সংরক্ষণের জায়গা পূর্ণ। অনুগ্রহ করে অপ্রয়োজনীয় পণ্য মুছে ফেলুন।" : "Error: Local storage limit reached. Please delete unnecessary products.");
       } else {
         console.error("Error saving to local storage:", e);
         alert((lang === "bn") ? "ডেটা সংরক্ষণে একটি অজানা ত্রুটি হয়েছে।" : "An unknown error occurred while saving data.");
@@ -238,19 +239,19 @@
     toast((lang === "bn") ? "🗑️ পণ্যটি মুছে ফেলা হয়েছে" : "Product removed");
   }
 
-  // ADMIN EDIT LOGIC (Only image handling updated for Data URL fallback)
+  // ADMIN EDIT LOGIC (UPDATED)
   function closeEdit() {
     const popup = qs("productEditPopup");
     if (popup) {
-        // Reset the image file input 
-        const fileInput = qs("edit_image_file");
-        if (fileInput) fileInput.value = ""; 
+        // Reset the image URL input 
+        const urlInput = qs("edit_image_url");
+        if (urlInput) urlInput.value = ""; 
         popup.style.display = "none";
         popup.setAttribute("aria-hidden", "true");
         // Reset custom position if it was dragged
         const panel = popup.querySelector('.popup-panel');
         if (panel) {
-            panel.style.position = ''; // Revert to default (modal centering)
+            panel.style.position = ''; 
             panel.style.left = '';
             panel.style.top = '';
             panel.style.transform = '';
@@ -285,11 +286,9 @@
     const pr = parseFloat(qs("edit_price").value.trim());
     const minQty = parseFloat(qs("edit_min_qty").value.trim());
     const cat = qs("edit_category").value;
-    const imageFile = qs("edit_image_file").files[0];
+    // UPDATED: Get URL from the new input field
+    const imageURL = qs("edit_image_url").value.trim(); 
     
-    // Hold original values in case of failure
-    const original_p = {...p}; 
-
     if (!bn || isNaN(pr) || pr <= 0) {
         alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
         return;
@@ -298,37 +297,22 @@
         alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
         return;
     }
+    // NEW Check: Require Image URL
+    if (!imageURL) {
+        alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন" : "Please provide a public image link");
+        return;
+    }
 
-    // 2. Apply textual changes to in-memory object
+    // 2. Apply changes to in-memory object
     p.name_bn = bn;
     p.name_en = en || bn;
     p.price = pr;
     p.min_qty = minQty;
     p.category = cat;
+    p.image = imageURL; // Save the new URL
 
-    // 3. Handle image change from file input asynchronously (KEEPING THIS FOR EDIT FOR EASY LOCAL UPDATE)
-    if (imageFile) {
-        const r = new FileReader();
-        r.onload = (e) => {
-            p.image = e.target.result;
-            // Now finalize the save after the image is loaded
-            if (!finalizeSave()) {
-                // If saving fails after image load, revert product image
-                p.image = original_p.image;
-            }
-        };
-        r.onerror = () => {
-             alert((lang === "bn") ? "ছবি লোড করতে ব্যর্থ" : "Failed to load image");
-             // Revert other changes too since the main saving logic won't run
-             products[idx] = original_p;
-             renderProducts(); 
-        };
-        r.readAsDataURL(imageFile);
-        toast((lang === "bn") ? "🖼️ ছবি লোড হচ্ছে..." : "🖼️ Image loading...");
-    } else {
-        // Finalize the save immediately if no new image file
-        finalizeSave();
-    }
+    // 3. Finalize the save
+    finalizeSave();
   }
 
   function onEdit(id) {
@@ -347,8 +331,9 @@
     qs("edit_min_qty").value = p.min_qty;
     qs("edit_category").value = p.category || "অন্যান্য";
     
-    // Reset file input to prevent accidental re-upload on next open
-    qs("edit_image_file").value = ""; 
+    // UPDATED: Fill the new URL input with the current image URL
+    const urlInput = qs("edit_image_url");
+    if (urlInput) urlInput.value = p.image || ""; 
 
     const preview = qs("edit_image_preview");
     if (p.image) {
@@ -538,7 +523,7 @@
     toast((lang === "bn") ? "অর্ডার WhatsApp-এ পাঠানো হয়েছে!" : "Order sent to WhatsApp!");
   }
 
-  // NEW function to handle image URL preview (replaces old file upload handler for Admin Add)
+  // function to handle image URL preview
   function handleImageUrlChange(urlInputId, previewId) {
     const urlInput = qs(urlInputId);
     const preview = qs(previewId);
@@ -555,104 +540,79 @@
   }
 
   // ADMIN: image preview handlers
-  // Renamed the admin function to match the new URL input
   function adminImageUrlChanged() {
     handleImageUrlChange("admin_image_url", "admin_image_preview");
   }
-  
-  // Kept for the Edit Panel's file upload
-  function editImageChanged() {
-    // This function still uses FileReader as it's the most convenient way 
-    // for an admin to update an image locally during an edit session.
-    handleImageChange("edit_image_file", "edit_image_preview");
+  // NEW: Image URL change handler for EDIT
+  function editImageUrlChanged() {
+    handleImageUrlChange("edit_image_url", "edit_image_preview");
   }
-  
-  function handleImageChange(fileInputId, previewId) {
-    const fileInput = qs(fileInputId);
-    const preview = qs(previewId);
-    if (!fileInput || !fileInput.files || !fileInput.files[0]) {
-        if(preview) {
-            preview.style.display = "none";
-            preview.src = ""; 
-        }
-        return; 
+
+
+  // ADMIN: add product (UNCHANGED from last update)
+  function adminAdd() {
+    const nameBnEl = qs("admin_name_bn");
+    const nameEnEl = qs("admin_name_en");
+    const priceEl = qs("admin_price");
+    const minQtyEl = qs("admin_min_qty"); 
+    const categoryEl = qs("admin_category");
+    const imageUrlEl = qs("admin_image_url"); 
+    
+    if (!nameBnEl || !priceEl || !minQtyEl || !imageUrlEl) return alert("Admin fields missing in HTML structure");
+
+    const bn = nameBnEl.value.trim();
+    const en = (nameEnEl && nameEnEl.value.trim()) || bn;
+    const pr = parseFloat(priceEl.value.trim()); 
+    const minQty = parseFloat(minQtyEl.value.trim()); 
+    const cat = (categoryEl && categoryEl.value) || "অন্যান্য";
+    const imageSrc = imageUrlEl.value.trim(); // Get the URL
+
+    if (!bn || isNaN(pr) || pr <= 0) return alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
+    if (isNaN(minQty) || minQty <= 0) return alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
+    if (!imageSrc) return alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন" : "Please provide a public image link");
+
+    const id = Date.now();
+
+    // 1. Add product to the in-memory array
+    products.push({
+      id,
+      name_bn: bn,
+      name_en: en,
+      price: pr,
+      image: imageSrc, // Save the public URL
+      desc: "",
+      category: cat,
+      min_qty: minQty 
+    });
+
+    // 2. Attempt to save all products
+    const saveSuccess = saveAll();
+
+    // 3. Handle success or failure
+    if (!saveSuccess) {
+        // If saving fails (e.g., QuotaExceededError), remove the product that was just added
+        products.pop();
+        renderCategories(); 
+        renderProducts();
+        return; // Stop execution
     }
-    const file = fileInput.files[0];
-    const reader = new FileReader();
-    reader.onload = e => {
-        if (preview) {
-            preview.src = e.target.result;
-            preview.style.display = "block";
-        }
-    };
-    reader.readAsDataURL(file);
+
+    // reset admin form
+    nameBnEl.value = "";
+    nameEnEl.value = "";
+    priceEl.value = "";
+    minQtyEl.value = "1"; // Reset min_qty
+    imageUrlEl.value = ""; // Reset URL field
+    const preview = qs("admin_image_preview");
+    if (preview) {
+      preview.style.display = "none";
+      preview.src = "";
+    }
+
+    renderCategories(); 
+    renderProducts();
+    toast((lang === "bn") ? "নতুন পণ্য যোগ হয়েছে" : "Product added");
   }
-
-  // ADMIN: add product (UPDATED TO USE URL INPUT)
- function adminAdd() {
-  const nameBnEl = qs("admin_name_bn");
-  const nameEnEl = qs("admin_name_en");
-  const priceEl = qs("admin_price");
-  const minQtyEl = qs("admin_min_qty"); 
-  const categoryEl = qs("admin_category");
-  // NEW: Get the URL input field
-  const imageUrlEl = qs("admin_image_url"); 
-  
-  if (!nameBnEl || !priceEl || !minQtyEl || !imageUrlEl) return alert("Admin fields missing in HTML structure");
-
-  const bn = nameBnEl.value.trim();
-  const en = (nameEnEl && nameEnEl.value.trim()) || bn;
-  const pr = parseFloat(priceEl.value.trim()); 
-  const minQty = parseFloat(minQtyEl.value.trim()); 
-  const cat = (categoryEl && categoryEl.value) || "অন্যান্য";
-  const imageSrc = imageUrlEl.value.trim(); // Get the URL
-
-  if (!bn || isNaN(pr) || pr <= 0) return alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
-  if (isNaN(minQty) || minQty <= 0) return alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
-  if (!imageSrc) return alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন" : "Please provide a public image link");
-
-  const id = Date.now();
-
-  // 1. Add product to the in-memory array
-  products.push({
-    id,
-    name_bn: bn,
-    name_en: en,
-    price: pr,
-    image: imageSrc, // Save the public URL
-    desc: "",
-    category: cat,
-    min_qty: minQty 
-  });
-
-  // 2. Attempt to save all products
-  const saveSuccess = saveAll();
-
-  // 3. Handle success or failure
-  if (!saveSuccess) {
-      // If saving fails (e.g., QuotaExceededError), remove the product that was just added
-      products.pop();
-      renderCategories(); 
-      renderProducts();
-      return; // Stop execution
-  }
-
-  // reset admin form
-  nameBnEl.value = "";
-  nameEnEl.value = "";
-  priceEl.value = "";
-  minQtyEl.value = "1"; // Reset min_qty
-  imageUrlEl.value = ""; // Reset URL field
-  const preview = qs("admin_image_preview");
-  if (preview) {
-    preview.style.display = "none";
-    preview.src = "";
-  }
-
-  renderCategories(); 
-  renderProducts();
-  toast((lang === "bn") ? "নতুন পণ্য যোগ হয়েছে" : "Product added");
-}
 
 
   // ADMIN: logout (unchanged)
@@ -696,83 +656,72 @@
 
 
     // Make admin panel and edit panel draggable (unchanged)
-(function makePanelsDraggable() {
-  const adminPanel = document.getElementById("adminPanel");
-  // Get the inner panel of the edit popup
-  const editPanel = document.querySelector("#productEditPopup .popup-panel"); 
+    (function makePanelsDraggable() {
+      const adminPanel = document.getElementById("adminPanel");
+      const editPanel = document.querySelector("#productEditPopup .popup-panel"); 
 
-  // Loop through both panels
-  [adminPanel, editPanel].filter(p => p !== null).forEach(panel => {
-    let isDragging = false;
-    let offsetX = 0, offsetY = 0;
+      [adminPanel, editPanel].filter(p => p !== null).forEach(panel => {
+        let isDragging = false;
+        let offsetX = 0, offsetY = 0;
 
-    // Use header/title element for a better drag handle experience
-    let dragHandle = panel.querySelector('h4') || panel.querySelector('.popup-header') || panel;
-    if (dragHandle && dragHandle !== panel) {
-        // Ensure the drag handle has the grab cursor
-        dragHandle.style.cursor = 'grab';
-    }
+        let dragHandle = panel.querySelector('h4') || panel.querySelector('.popup-header') || panel;
+        if (dragHandle && dragHandle !== panel) {
+            dragHandle.style.cursor = 'grab';
+        }
 
-    panel.addEventListener("mousedown", (e) => {
-      // Do NOT drag if the user clicks an interactive element inside the panel
-      if (e.target.tagName === "INPUT" || 
-          e.target.tagName === "BUTTON" || 
-          e.target.tagName === "SELECT" || 
-          e.target.tagName === "TEXTAREA" || 
-          e.target.id.includes("image_preview") || // Handles both admin and edit previews
-          e.target.id === "closeCart" ||
-          e.target.id === "editCancelCloseBtn"
-      ) {
-          return;
-      }
-      
-      // If it's the edit panel (not the adminPanel), switch to fixed positioning for dragging
-      if (panel.closest("#productEditPopup")) { 
-          // Set initial position to current center to prevent a jump
-          const rect = panel.getBoundingClientRect();
-          panel.style.position = 'fixed';
-          panel.style.margin = '0'; // clear default margins from centering
-          panel.style.left = rect.left + 'px';
-          panel.style.top = rect.top + 'px';
-      } else {
-          // Ensure admin panel is always positioned fixed for dragging
-          panel.style.position = 'fixed'; 
-      }
+        panel.addEventListener("mousedown", (e) => {
+          if (e.target.tagName === "INPUT" || 
+              e.target.tagName === "BUTTON" || 
+              e.target.tagName === "SELECT" || 
+              e.target.tagName === "TEXTAREA" || 
+              e.target.id.includes("image_preview") || 
+              e.target.id === "closeCart" ||
+              e.target.id === "editCancelCloseBtn"
+          ) {
+              return;
+          }
+          
+          if (panel.closest("#productEditPopup")) { 
+              const rect = panel.getBoundingClientRect();
+              panel.style.position = 'fixed';
+              panel.style.margin = '0'; 
+              panel.style.left = rect.left + 'px';
+              panel.style.top = rect.top + 'px';
+          } else {
+              panel.style.position = 'fixed'; 
+          }
 
-      isDragging = true;
-      offsetX = e.clientX - panel.getBoundingClientRect().left;
-      offsetY = e.clientY - panel.getBoundingClientRect().top;
-      
-      // Change cursor to indicate dragging is active
-      document.body.style.cursor = "grabbing"; 
-      panel.style.cursor = "grabbing";
-      if (dragHandle && dragHandle !== panel) {
-        dragHandle.style.cursor = 'grabbing';
-      }
-    });
+          isDragging = true;
+          offsetX = e.clientX - panel.getBoundingClientRect().left;
+          offsetY = e.clientY - panel.getBoundingClientRect().top;
+          
+          document.body.style.cursor = "grabbing"; 
+          panel.style.cursor = "grabbing";
+          if (dragHandle && dragHandle !== panel) {
+            dragHandle.style.cursor = 'grabbing';
+          }
+        });
 
-    document.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-      panel.style.left = e.clientX - offsetX + "px";
-      panel.style.top = e.clientY - offsetY + "px";
-      panel.style.transform = "translate(0,0)";
-    });
+        document.addEventListener("mousemove", (e) => {
+          if (!isDragging) return;
+          panel.style.left = e.clientX - offsetX + "px";
+          panel.style.top = e.clientY - offsetY + "px";
+          panel.style.transform = "translate(0,0)";
+        });
 
-    document.addEventListener("mouseup", () => {
-      if (!isDragging) return;
-      isDragging = false;
-      
-      // Reset cursors
-      document.body.style.cursor = "default";
-      // Reset cursor for the panel/handle
-      const defaultCursor = 'grab'; 
-      panel.style.cursor = defaultCursor;
-      if (dragHandle && dragHandle !== panel) {
-        dragHandle.style.cursor = 'grab'; 
-      }
-    });
-  });
-})();
+        document.addEventListener("mouseup", () => {
+          if (!isDragging) return;
+          isDragging = false;
+          
+          document.body.style.cursor = "default";
+          const defaultCursor = 'grab'; 
+          panel.style.cursor = defaultCursor;
+          if (dragHandle && dragHandle !== panel) {
+            dragHandle.style.cursor = 'grab'; 
+          }
+        });
+      });
+    })();
 
 
     // theme toggle (unchanged)
@@ -803,7 +752,6 @@
     // admin panel controls 
     const adminAddBtn = qs("adminAddBtn");
     const adminCloseBtn = qs("adminClose");
-    // CHANGED: Use the new URL input field
     const adminUrlInput = qs("admin_image_url"); 
     const adminPanel = qs("adminPanel");
     const adminPanelFooter = qs("adminPanelFooter");
@@ -812,29 +760,30 @@
     if (adminCloseBtn) adminCloseBtn.addEventListener("click", () => {
       if (adminPanel) {
         adminPanel.style.display = "none";
-        // Reset custom position if it was dragged
         adminPanel.style.left = '';
         adminPanel.style.top = '';
         adminPanel.style.transform = '';
       }
     });
-    // CHANGED: Use the new URL change handler
+    // Wire up Admin ADD URL input for preview
     if (adminUrlInput) adminUrlInput.addEventListener("input", adminImageUrlChanged);
     
-    // New edit panel controls (unchanged)
+    // New edit panel controls 
     const editSaveBtn = qs("editSaveBtn");
     const editCancelBtn = qs("editCancelBtn");
     const editCancelCloseBtn = qs("editCancelCloseBtn");
-    const editFile = qs("edit_image_file");
+    // NEW: Get the URL input for the edit panel
+    const editUrlInput = qs("edit_image_url");
 
     if (editSaveBtn) editSaveBtn.addEventListener("click", saveEdit);
     if (editCancelBtn) editCancelBtn.addEventListener("click", closeEdit);
     if (editCancelCloseBtn) editCancelCloseBtn.addEventListener("click", closeEdit);
-    if (editFile) editFile.addEventListener("change", editImageChanged);
+    // NEW: Wire up Admin EDIT URL input for preview
+    if (editUrlInput) editUrlInput.addEventListener("input", editImageUrlChanged);
+
 
     // add logout inside panel 
     if (adminPanel && adminPanelFooter) {
-      // Check if logout button already exists to prevent duplication
       if (!qs("adminLogoutBtn")) {
           const logout = document.createElement("button");
           logout.id = "adminLogoutBtn";
