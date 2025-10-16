@@ -1,4 +1,4 @@
-// FINAL fixed script.js (V4 - URL Input for BOTH Admin Add & Admin Edit)
+// FINAL fixed script.js (V5 - URL Input for BOTH Admin Add & Admin Edit, with better URL guidance)
 (() => {
   const WA_PHONE = "8801897547953"; 
 
@@ -30,12 +30,6 @@
     products = products.map(p => ({...p, min_qty: p.min_qty || 1 }));
   }
 
-  /**
-   * Saves data to localStorage and handles QuotaExceededError.
-   * NOTE: This will only fail if non-image-URL data (cart, lang) grows too big, 
-   * but the safety check remains good practice.
-   * @returns {boolean} True if save was successful, false otherwise.
-   */
   function saveAll() {
     try {
       localStorage.setItem("products", JSON.stringify(products));
@@ -49,11 +43,10 @@
         console.error("Error saving to local storage:", e);
         alert((lang === "bn") ? "ডেটা সংরক্ষণে একটি অজানা ত্রুটি হয়েছে।" : "An unknown error occurred while saving data.");
       }
-      return false; // Failure
+      return false; 
     }
   }
 
-  // small toast helper
   function toast(msg) {
     const t = document.createElement("div");
     t.textContent = msg;
@@ -78,16 +71,14 @@
     return "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' rx='12' fill='#f4fff6'/></svg>`);
   }
 
-  // CATEGORY RENDER (unchanged)
+  // CATEGORY RENDER 
   function renderCategories() {
     const container = qs("categoryList");
     if (!container) return;
     
-    // 1. Get all unique categories from the products list
     const productCategories = products.map(p => p.category).filter(Boolean);
     const uniqueCategories = [...new Set(productCategories)];
 
-    // 2. Define the full list, starting with 'All' ("সব")
     const cats = ["সব", ...uniqueCategories].sort((a, b) => {
         if (a === "সব") return -1;
         if (b === "সব") return 1;
@@ -100,7 +91,6 @@
       const pill = document.createElement("div");
       pill.className = "category-pill";
       
-      // 3. Highlight the active category
       if (c === selectedCategory) {
         pill.classList.add("active");
       }
@@ -108,41 +98,24 @@
       pill.textContent = c;
       
       pill.onclick = () => {
-        // 4. Update the state
         selectedCategory = c; 
-        
-        // 5. Re-render categories to show the new active pill
         renderCategories(); 
-        
-        // 6. Filter products and re-render grid
         if (c === "সব") renderProducts();
         else renderProducts(products.filter(p => p.category === c));
       };
       
-      // 7. Append the pill to the container
       container.appendChild(pill);
     });
   }
 
-  // SEARCH support (unchanged)
+  // SEARCH support 
   const translit = {
-    alu: "আলু",
-    aloo: "আলু",
-    peyaj: "পেঁয়াজ",
-    peyajh: "পেঁয়াজ",
-    onion: "পেঁয়াজ",
-    rosun: "রসুন",
-    roshun: "রসুন",
-    garlic: "রসুন",
-    ada: "আদা",
-    ginger: "আদা",
-    dal: "ডাল",
-    lentil: "ডাল",
-    chini: "চিনি",
-    sugar: "চিনি"
+    alu: "আলু", aloo: "আলু", peyaj: "পেঁয়াজ", peyajh: "পেঁয়াজ", onion: "পেঁয়াজ",
+    rosun: "রসুন", roshun: "রসুন", garlic: "রসুন", ada: "আদা", ginger: "আদা",
+    dal: "ডাল", lentil: "ডাল", chini: "চিনি", sugar: "চিনি"
   };
 
-  // Render products (unchanged)
+  // Render products
   function renderProducts(listArg) {
     const grid = qs("productGrid");
     if (!grid) return;
@@ -165,7 +138,6 @@
           if (translit[q] && bn.includes(translit[q])) return true;
           return false;
         } else {
-          // bangla input
           if (bn.includes(q)) return true;
           const revKey = Object.keys(translit).find(k => translit[k] === q);
           if (revKey && en.includes(revKey)) return true;
@@ -186,9 +158,8 @@
       const img = p.image || placeholderImage();
       const title = (lang === "bn") ? p.name_bn : (p.name_en || p.name_bn);
       
-      // Display minimum quantity hint
       const qtyHint = p.min_qty && p.min_qty > 1 
-        ? `<div style="font-size: 0.8em; color: var(--muted); padding: 0 15px 5px;">Min: ${p.min_qty}kg</div>`
+        ? `<div style="font-size: 0.8em; color: var(--accent); padding: 0 15px 5px; font-weight: 600;">Min: ${p.min_qty}kg</div>`
         : '';
 
       card.innerHTML = `
@@ -201,13 +172,11 @@
       `;
       const actions = card.querySelector(".actions");
       if (isAdmin) {
-        // Edit button
         const editBtn = document.createElement("button");
         editBtn.className = "small-btn edit-btn";
         editBtn.textContent = "✏️ Edit";
         editBtn.addEventListener("click", () => onEdit(p.id));
         actions.appendChild(editBtn);
-        // Remove button
         const delBtn = document.createElement("button");
         delBtn.className = "small-btn danger-btn";
         delBtn.textContent = "🗑️ Remove";
@@ -217,16 +186,14 @@
         const addBtn = document.createElement("button");
         addBtn.className = "small-btn add-btn";
         addBtn.textContent = lang === "bn" ? "অর্ডার করুন" : "Add";
-        
         addBtn.addEventListener("click", () => addToCart(p.id)); 
-        
         actions.appendChild(addBtn);
       }
       grid.appendChild(card);
     });
   }
 
-  // ADMIN: remove product (unchanged)
+  // ADMIN: remove product
   function onRemove(id) {
     if (!isAdmin) return alert("Only admin can remove");
     const found = products.find(p => p.id === id);
@@ -239,11 +206,10 @@
     toast((lang === "bn") ? "🗑️ পণ্যটি মুছে ফেলা হয়েছে" : "Product removed");
   }
 
-  // ADMIN EDIT LOGIC (UPDATED)
+  // ADMIN EDIT LOGIC (UPDATED for URL input)
   function closeEdit() {
     const popup = qs("productEditPopup");
     if (popup) {
-        // Reset the image URL input 
         const urlInput = qs("edit_image_url");
         if (urlInput) urlInput.value = ""; 
         popup.style.display = "none";
@@ -251,22 +217,19 @@
         // Reset custom position if it was dragged
         const panel = popup.querySelector('.popup-panel');
         if (panel) {
-            panel.style.position = ''; 
-            panel.style.left = '';
-            panel.style.top = '';
-            panel.style.transform = '';
+            panel.style.position = ''; panel.style.left = '';
+            panel.style.top = ''; panel.style.transform = '';
         }
     }
   }
 
   function finalizeSave() {
-    if (saveAll()) { // Check for successful save
+    if (saveAll()) { 
         renderCategories(); 
         renderProducts();
         closeEdit();
         toast((lang === "bn") ? "✅ পণ্য আপডেট করা হয়েছে" : "✅ Product updated");
     }
-    // If save fails, the alert in saveAll runs, and we stay in the edit popup.
   }
 
   function saveEdit() {
@@ -280,14 +243,12 @@
 
     const p = products[idx];
     
-    // 1. Get values from popup
     const bn = qs("edit_name_bn").value.trim();
     const en = qs("edit_name_en").value.trim();
     const pr = parseFloat(qs("edit_price").value.trim());
     const minQty = parseFloat(qs("edit_min_qty").value.trim());
     const cat = qs("edit_category").value;
-    // UPDATED: Get URL from the new input field
-    const imageURL = qs("edit_image_url").value.trim(); 
+    const imageURL = qs("edit_image_url").value.trim(); // Get URL
     
     if (!bn || isNaN(pr) || pr <= 0) {
         alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
@@ -297,21 +258,19 @@
         alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
         return;
     }
-    // NEW Check: Require Image URL
     if (!imageURL) {
-        alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন" : "Please provide a public image link");
+        // Clear guidance for the admin
+        alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন (যেমন ImgBB বা PostImage থেকে)" : "Please provide a public, direct image link (e.g., from ImgBB or PostImage).");
         return;
     }
 
-    // 2. Apply changes to in-memory object
     p.name_bn = bn;
     p.name_en = en || bn;
     p.price = pr;
     p.min_qty = minQty;
     p.category = cat;
-    p.image = imageURL; // Save the new URL
+    p.image = imageURL; 
 
-    // 3. Finalize the save
     finalizeSave();
   }
 
@@ -331,7 +290,7 @@
     qs("edit_min_qty").value = p.min_qty;
     qs("edit_category").value = p.category || "অন্যান্য";
     
-    // UPDATED: Fill the new URL input with the current image URL
+    // Fill the new URL input
     const urlInput = qs("edit_image_url");
     if (urlInput) urlInput.value = p.image || ""; 
 
@@ -344,7 +303,6 @@
         preview.style.display = "none";
     }
     
-    // Show popup
     const popup = qs("productEditPopup");
     if (popup) {
         popup.style.display = "flex";
@@ -352,29 +310,28 @@
     }
   }
 
-  // CART helpers (unchanged)
+  // CART helpers
   function updateCartCount() {
     const el = qs("cartCount");
-    if (!el) return;
+    const elFooter = qs("cartCountFooter");
     const totalQty = cart.reduce((s, it) => s + (it.qty || 0), 0);
-    el.textContent = totalQty;
+    if (el) el.textContent = totalQty;
+    if (elFooter) elFooter.textContent = totalQty;
   }
 
   function addToCart(id) {
     const p = products.find(x => x.id === id);
     if (!p) { toast("Product not found"); return; }
     
-    // Use product-specific minimum quantity
     const minQty = p.min_qty || 1; 
     
     const existing = cart.find(c => c.id === id);
     if (existing) existing.qty += minQty;
-    else cart.push({ id: p.id, name_bn: p.name_bn, name_en: p.name_en, price: p.price, qty: minQty, min_qty: minQty }); // Store min_qty in cart item
+    else cart.push({ id: p.id, name_bn: p.name_bn, name_en: p.name_en, price: p.price, qty: minQty, min_qty: minQty }); 
     
     saveAll();
     updateCartCount();
     
-    // Instantly refresh UI elements
     renderCartItems(); 
     openCart();        
     
@@ -396,7 +353,7 @@
       const sub = (it.price || 0) * (it.qty || 0);
       total += sub;
       
-      const minQty = it.min_qty || 1; // Use product-specific min_qty
+      const minQty = it.min_qty || 1; 
       
       const row = document.createElement("div");
       row.className = "cart-item";
@@ -406,7 +363,6 @@
       
       const qtyText = `kg (${(lang === "bn") ? "কমপক্ষে" : "Min"}: ${minQty}kg)`;
 
-      // UPDATED HTML to include + and - buttons
       row.innerHTML = `
         <div style="flex:1">
           <div style="font-weight:700">${(lang === "bn") ? it.name_bn : it.name_en}</div>
@@ -424,7 +380,6 @@
       const incrementBtn = row.querySelector(".increment-btn");
       const decrementBtn = row.querySelector(".decrement-btn");
       
-      // Helper function to update quantity and refresh cart
       const updateQty = (newQty) => {
           let v = parseInt(newQty, 10);
           if (isNaN(v) || v < minQty) {
@@ -437,23 +392,16 @@
           updateCartCount();
       };
       
-      // Input change listener
       input.addEventListener("change", (e) => {
         let valRaw = String(e.target.value || "");
-        // convert bangla digits to latin if any
         const bnDigits = { "০":"0","১":"1","২":"2","৩":"3","৪":"4","৫":"5","৬":"6","৭":"7","৮":"8","৯":"9" };
         valRaw = valRaw.replace(/[০১২৩৪৫৬৭৮৯]/g, d => bnDigits[d] || d);
         updateQty(valRaw.replace(/[^\d]/g,""));
       });
       
-      // Increment button listener
-      incrementBtn.addEventListener("click", () => {
-          updateQty(it.qty + 1);
-      });
+      incrementBtn.addEventListener("click", () => updateQty(it.qty + 1));
       
-      // Decrement button listener
       decrementBtn.addEventListener("click", () => {
-          // Prevent going below min_qty
           const newQty = it.qty - 1;
           if (newQty >= minQty) {
               updateQty(newQty);
@@ -462,7 +410,6 @@
           }
       });
       
-      // Remove button listener
       removeBtn.addEventListener("click", () => {
         cart.splice(idx, 1);
         saveAll();
@@ -475,7 +422,7 @@
     if (totalBlock) totalBlock.innerHTML = `<div style="font-weight:900;text-align:right">${(lang === "bn") ? "মোট:" : "Total"}: ৳${total}</div>`;
   }
 
-  // Cart popup control (unchanged)
+  // Cart popup control
   function openCart() {
     const popup = qs("cartPopup");
     if (!popup) return;
@@ -490,11 +437,10 @@
     popup.setAttribute("aria-hidden", "true");
   }
 
-  // Confirm order -> WhatsApp (unchanged)
+  // Confirm order -> WhatsApp
   function confirmOrder() {
     if (!cart.length) { alert((lang === "bn") ? "আপনার কার্ট খালি" : "Your cart is empty"); return; }
     
-    // Validate against product-specific minimum quantity
     const bad = cart.find(i => (i.qty || 0) < (i.min_qty || 1)); 
     if (bad) { 
       const minQty = bad.min_qty || 1;
@@ -515,7 +461,7 @@
     msg += `\n${(lang === "bn") ? "ফোন" : "Phone"}: +880${WA_PHONE}`;
     const waUrl = `https://wa.me/${WA_PHONE}?text=${encodeURIComponent(msg)}`;
     window.open(waUrl, "_blank");
-    // clear cart after sending
+    
     cart = [];
     saveAll();
     updateCartCount();
@@ -543,13 +489,12 @@
   function adminImageUrlChanged() {
     handleImageUrlChange("admin_image_url", "admin_image_preview");
   }
-  // NEW: Image URL change handler for EDIT
   function editImageUrlChanged() {
     handleImageUrlChange("edit_image_url", "edit_image_preview");
   }
 
 
-  // ADMIN: add product (UNCHANGED from last update)
+  // ADMIN: add product
   function adminAdd() {
     const nameBnEl = qs("admin_name_bn");
     const nameEnEl = qs("admin_name_en");
@@ -565,44 +510,42 @@
     const pr = parseFloat(priceEl.value.trim()); 
     const minQty = parseFloat(minQtyEl.value.trim()); 
     const cat = (categoryEl && categoryEl.value) || "অন্যান্য";
-    const imageSrc = imageUrlEl.value.trim(); // Get the URL
+    const imageSrc = imageUrlEl.value.trim(); 
 
     if (!bn || isNaN(pr) || pr <= 0) return alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
     if (isNaN(minQty) || minQty <= 0) return alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
-    if (!imageSrc) return alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন" : "Please provide a public image link");
+    
+    // Clear guidance for the admin
+    if (!imageSrc) return alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন (যেমন ImgBB বা PostImage থেকে)" : "Please provide a public, direct image link (e.g., from ImgBB or PostImage).");
 
     const id = Date.now();
 
-    // 1. Add product to the in-memory array
     products.push({
       id,
       name_bn: bn,
       name_en: en,
       price: pr,
-      image: imageSrc, // Save the public URL
+      image: imageSrc, 
       desc: "",
       category: cat,
       min_qty: minQty 
     });
 
-    // 2. Attempt to save all products
     const saveSuccess = saveAll();
 
-    // 3. Handle success or failure
     if (!saveSuccess) {
-        // If saving fails (e.g., QuotaExceededError), remove the product that was just added
         products.pop();
         renderCategories(); 
         renderProducts();
-        return; // Stop execution
+        return; 
     }
 
     // reset admin form
     nameBnEl.value = "";
     nameEnEl.value = "";
     priceEl.value = "";
-    minQtyEl.value = "1"; // Reset min_qty
-    imageUrlEl.value = ""; // Reset URL field
+    minQtyEl.value = "1"; 
+    imageUrlEl.value = ""; 
     const preview = qs("admin_image_preview");
     if (preview) {
       preview.style.display = "none";
@@ -615,7 +558,7 @@
   }
 
 
-  // ADMIN: logout (unchanged)
+  // ADMIN: logout
   function adminLogout() {
     isAdmin = false;
     sessionStorage.removeItem("isAdmin");
@@ -625,7 +568,7 @@
     toast((lang === "bn") ? "Admin logged out" : "Admin logged out");
   }
 
-  // keyboard admin login (Ctrl + A) (unchanged)
+  // keyboard admin login (Ctrl + A)
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey && e.key.toLowerCase() === "a") {
       const user = prompt("Admin Username:");
@@ -655,7 +598,7 @@
     if (sInput) sInput.addEventListener("keyup", (e) => { if (e.key === "Enter") renderProducts(); });
 
 
-    // Make admin panel and edit panel draggable (unchanged)
+    // Make admin panel and edit panel draggable
     (function makePanelsDraggable() {
       const adminPanel = document.getElementById("adminPanel");
       const editPanel = document.querySelector("#productEditPopup .popup-panel"); 
@@ -670,12 +613,9 @@
         }
 
         panel.addEventListener("mousedown", (e) => {
-          if (e.target.tagName === "INPUT" || 
-              e.target.tagName === "BUTTON" || 
-              e.target.tagName === "SELECT" || 
-              e.target.tagName === "TEXTAREA" || 
-              e.target.id.includes("image_preview") || 
-              e.target.id === "closeCart" ||
+          if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON" || 
+              e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA" || 
+              e.target.id.includes("image_preview") || e.target.id === "closeCart" ||
               e.target.id === "editCancelCloseBtn"
           ) {
               return;
@@ -683,10 +623,8 @@
           
           if (panel.closest("#productEditPopup")) { 
               const rect = panel.getBoundingClientRect();
-              panel.style.position = 'fixed';
-              panel.style.margin = '0'; 
-              panel.style.left = rect.left + 'px';
-              panel.style.top = rect.top + 'px';
+              panel.style.position = 'fixed'; panel.style.margin = '0'; 
+              panel.style.left = rect.left + 'px'; panel.style.top = rect.top + 'px';
           } else {
               panel.style.position = 'fixed'; 
           }
@@ -724,11 +662,11 @@
     })();
 
 
-    // theme toggle (unchanged)
+    // theme toggle
     const themeBtn = qs("themeToggle");
     if (themeBtn) themeBtn.addEventListener("click", () => document.body.classList.toggle("dark-mode"));
 
-    // lang toggle (unchanged)
+    // lang toggle
     const langBtn = qs("langToggle");
     if (langBtn) {
       langBtn.textContent = (lang === "bn") ? "English" : "বাংলা";
@@ -741,7 +679,7 @@
       });
     }
 
-    // cart popup buttons (unchanged)
+    // cart popup buttons
     const cartBtn = qs("cartFloating");
     if (cartBtn) cartBtn.addEventListener("click", openCart);
     const closeCartBtn = qs("closeCart");
@@ -760,9 +698,7 @@
     if (adminCloseBtn) adminCloseBtn.addEventListener("click", () => {
       if (adminPanel) {
         adminPanel.style.display = "none";
-        adminPanel.style.left = '';
-        adminPanel.style.top = '';
-        adminPanel.style.transform = '';
+        adminPanel.style.left = ''; adminPanel.style.top = ''; adminPanel.style.transform = '';
       }
     });
     // Wire up Admin ADD URL input for preview
@@ -772,13 +708,12 @@
     const editSaveBtn = qs("editSaveBtn");
     const editCancelBtn = qs("editCancelBtn");
     const editCancelCloseBtn = qs("editCancelCloseBtn");
-    // NEW: Get the URL input for the edit panel
     const editUrlInput = qs("edit_image_url");
 
     if (editSaveBtn) editSaveBtn.addEventListener("click", saveEdit);
     if (editCancelBtn) editCancelBtn.addEventListener("click", closeEdit);
     if (editCancelCloseBtn) editCancelCloseBtn.addEventListener("click", closeEdit);
-    // NEW: Wire up Admin EDIT URL input for preview
+    // Wire up Admin EDIT URL input for preview
     if (editUrlInput) editUrlInput.addEventListener("input", editImageUrlChanged);
 
 
@@ -795,7 +730,6 @@
       }
     }
 
-    // ensure admin panel z-index so visible on top
     if (adminPanel) adminPanel.style.zIndex = 999999;
 
     // initial UI render
@@ -809,4 +743,6 @@
   window.openCart = openCart;
   window.closeCart = closeCart;
   window.renderProducts = renderProducts;
+  window.adminImageUrlChanged = adminImageUrlChanged; // Expose global handlers
+  window.editImageUrlChanged = editImageUrlChanged;
 })();
