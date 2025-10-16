@@ -415,7 +415,6 @@ body.dark-mode .card {
   margin-bottom: 20px;
   padding-bottom: 10px;
   border-bottom: 2px solid var(--accent); 
-  cursor: grab; /* Added grab cursor for draggable header */
 }
 
 #closeCart, #editCancelCloseBtn {
@@ -444,37 +443,8 @@ body.dark-mode .card {
   padding: 12px 0;
 }
 
-/* New styles for cart quantity controls */
-.cart-qty-controls {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.cart-qty-controls .qty-btn {
-    background: var(--border);
-    color: var(--text);
-    border: 1px solid var(--muted);
-    width: 30px;
-    height: 30px;
-    padding: 0;
-    line-height: 1;
-    border-radius: 4px;
-    font-size: 1.2em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.cart-qty-controls .qty-btn:hover {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-}
-
 .cart-item input[type="number"] {
-    /* Adjusted width to accommodate new buttons */
-    width: 60px !important; 
+    width: 80px !important;
     padding: 6px;
     border-radius: 6px;
     border: 1px solid var(--border);
@@ -482,13 +452,6 @@ body.dark-mode .card {
     background: var(--bg); 
     color: var(--text);
     font-weight: 600;
-}
-
-.cart-qty-controls .remove-btn {
-    /* Ensures remove button is smaller and aligned */
-    padding: 6px 8px; 
-    margin-left: 5px;
-    font-size: 0.8em;
 }
 
 .cart-total {
@@ -522,7 +485,6 @@ body.dark-mode .card {
 .admin-panel h4 {
     margin: 0 0 10px 0;
     color: var(--accent);
-    cursor: grab; /* Explicitly set grab cursor on title for drag handle */
 }
 
 /* General Input Styling for Admin Panel, Edit Modal, and CartNote */
@@ -538,6 +500,20 @@ body.dark-mode .card {
     color: var(--text);
     box-sizing: border-box; 
     font-family: inherit; 
+}
+
+/* --- ADMIN PANEL INPUT IMPROVEMENT (Added/Updated) --- */
+
+/* Ensures the new Image URL input is consistently styled and appears */
+.admin-panel input#admin_image_url {
+    margin-top: 10px; 
+    margin-bottom: 10px;
+}
+
+/* Ensures Price and Minimum Quantity fields align numbers to the right */
+.admin-panel input[type="number"],
+.admin-edit-panel input[type="number"] {
+    text-align: right;
 }
 
 /* CartNote specific overrides */
