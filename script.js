@@ -10,7 +10,7 @@
   let lang = localStorage.getItem("lang") || "bn";
   let isAdmin = sessionStorage.getItem("isAdmin") === "true";
 
-  let selectedCategory = " সব"; 
+  let selectedCategory = "সব"; 
 
   // Image data holders for Base64 during Admin Add/Edit process
   let adminNewImage = null; 
@@ -29,7 +29,7 @@
     ];
     // Ensure all products have min_qty, default to 1 if missing from old data
     products = products.map(p => ({...p, min_qty: p.min_qty || 1 }));
-    localStorage.setItem("products", JSON.stringify(products));
+    localStorage.setItem("products", JSON.stringify(products)); // <-- Saves defaults to storage
   } else {
     // Ensure all loaded products have min_qty, default to 1 if missing from old data
     products = products.map(p => ({...p, min_qty: p.min_qty || 1 }));
@@ -106,21 +106,21 @@
         preview.src = base64;
         preview.style.display = "block";
         // Re-enable button on success
-        if (addBtn) addBtn.textContent = (lang === "bn") ? "+ Add Product" : "+ Add Product"; 
+        if (addBtn) addBtn.textContent = (lang === "bn") ? "+ নতুন পণ্য যোগ করুন" : "+ Add Product"; 
         if (addBtn) addBtn.disabled = false;
       }).catch(() => {
         alert("Could not read file.");
         adminNewImage = null;
         preview.style.display = "none";
         // Re-enable button on failure
-        if (addBtn) addBtn.textContent = (lang === "bn") ? "+ Add Product" : "+ Add Product"; 
+        if (addBtn) addBtn.textContent = (lang === "bn") ? "+ নতুন পণ্য যোগ করুন" : "+ Add Product"; 
         if (addBtn) addBtn.disabled = false;
       });
     } else {
       adminNewImage = null;
       preview.style.display = "none";
       // Ensure button is enabled if file is cleared
-      if (addBtn) addBtn.textContent = (lang === "bn") ? "+ Add Product" : "+ Add Product";
+      if (addBtn) addBtn.textContent = (lang === "bn") ? "+ নতুন পণ্য যোগ করুন" : "+ Add Product";
       if (addBtn) addBtn.disabled = false;
     }
   }
