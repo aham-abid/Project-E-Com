@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="bn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Climax Online Shop</title>
+  <meta name="description" content="Climax Online Shop — বিশ্বাস ও গুণমানের অনলাইন ঠিকানা" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-left">
+      <div class="logo-area">
+        <img src="https://i.postimg.cc/j2kxF9wy/Screenshot-2025-10-11-140436.png"
+             alt="Climax Online Shop Logo"
+             class="site-logo" />
+        <div class="brand">
+          <div class="brand-title">Climax Online Shop</div>
+          <div class="brand-sub">বিশ্বাস ও গুণমানের অনলাইন ঠিকানা</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <input id="searchInput" class="search" placeholder="পণ্য খুঁজুন (আলু, পেঁয়াজ, ডাল...)" />
+      <button id="searchBtn" class="btn-secondary">Search</button>
+    </div>
+
+    <div class="header-right">
+      <button id="langToggle" class="icon-btn">English</button>
+      <button id="themeToggle" class="icon-btn">🌗</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-left">
+        <h1 id="heroTitle">Fresh market, straight to your home</h1>
+        <p id="heroSubtitle">
+          আলু, পেঁয়াজ, রসুন, আদা, ডাল, চিনি — দৈনন্দিন প্রয়োজনের দ্রুত ও নিরাপদ ডেলিভারি।
+        </p>
+        <div class="hero-ctas">
+          <button id="shopNow" class="btn-primary" onclick="openCart()">এখনই বাজার করুন</button>
+          <div class="trust">
+            🚚 ঢাকা-এ দ্রুত ডেলিভারি • ☎️ <a href="tel:+8801897547953">+880 1897-547953</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="categories">
+      <h3>ক্যাটাগরি</h3>
+      <div id="categoryList" class="category-list"></div>
+    </section>
+
+    <section class="products">
+      <div class="products-header">
+        <h2 id="productsTitle">পণ্যসমূহ</h2>
+      </div>
+      <div id="productGrid" class="product-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-left">
+      <strong>Climax Online Shop</strong>
+      <div>Head Office: ICD Road, Motijheel, Dhaka, Bangladesh</div>
+    </div>
+    <div class="footer-right">
+      Support: WhatsApp <a href="https://wa.me/8801897547953" target="_blank">+880 1897-547953</a>
+    </div>
+  </footer>
+
+  <button id="cartFloating" class="cart-floating" aria-label="Open cart">🛒 Cart (<span id="cartCount">0</span>)</button>
+
+  <div id="cartPopup" class="popup" aria-hidden="true">
+    <div class="popup-panel">
+      <div class="popup-header">
+        <span>🛒 আপনার কার্ট</span>
+        <button id="closeCart">✕</button>
+      </div>
+      <div class="popup-content">
+        <div id="cartItems" class="cart-items"></div>
+        <div class="cart-total" id="cartTotalBlock"></div>
+        <textarea id="cartNote" placeholder="অর্ডার নোট বা ঠিকানা লিখুন..."></textarea>
+        <button id="confirmOrder" class="whatsapp-btn">📲 WhatsApp-এ অর্ডার করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminPanel" class="admin-panel" aria-hidden="true" style="display:none;">
+    <h4>Admin — Add Product</h4>
+    <input id="admin_name_bn" placeholder="Name (বাংলা)" />
+    <input id="admin_name_en" placeholder="Name (English)" />
+    <input type="number" step="0.01" min="1" id="admin_price" placeholder="Price (৳/kg)" />
+    <input type="number" step="1" min="1" id="admin_min_qty" placeholder="Min Qty (kg, Default 1)" value="1" />
+
+    <label class="upload-label">
+      🖼️ Upload Image:
+      <input type="file" id="admin_image_file" accept="image/*" />
+    </label>
+    <img id="admin_image_preview" style="width:100%;border-radius:10px;display:none;margin-top:8px;" />
+
+    <select id="admin_category">
+      <option value="সবজি">সবজি</option>
+      <option value="মশলা">মশলা</option>
+      <option value="ডাল">ডাল</option>
+      <option value="চিনি">চিনি</option>
+      <option value="অন্যান্য">অন্যান্য</option>
+    </select>
+
+    <div class="admin-actions" id="adminPanelFooter">
+      <button id="adminAddBtn" class="btn-primary">Add Product</button>
+      <button id="adminClose" class="btn-secondary">Close</button>
+      </div>
+  </div>
+  
+  <div id="productEditPopup" class="popup" aria-hidden="true">
+    <div class="popup-panel admin-edit-panel">
+      <div class="popup-header">
+        <span>✏️ Admin — Edit Product</span>
+        <button id="editCancelCloseBtn">✕</button>
+      </div>
+      
+      <div class="popup-content">
+        <input type="hidden" id="edit_product_id" />
+        <input id="edit_name_bn" placeholder="Name (বাংলা)" />
+        <input id="edit_name_en" placeholder="Name (English)" />
+        <input type="number" step="0.01" min="1" id="edit_price" placeholder="Price (৳/kg)" />
+        <input type="number" step="1" min="1" id="edit_min_qty" placeholder="Min Qty (kg, Default 1)" />
+
+        <label class="upload-label">
+            🖼️ Upload New Image (Optional):
+            <input type="file" id="edit_image_file" accept="image/*" />
+        </label>
+        <img id="edit_image_preview" style="width:100%;border-radius:10px;display:none;margin-top:8px;" />
+
+        <select id="edit_category">
+            <option value="সবজি">সবজি</option>
+            <option value="মশলা">মশলা</option>
+            <option value="ডাল">ডাল</option>
+            <option value="চিনি">চিনি</option>
+            <option value="অন্যান্য">অন্যান্য</option>
+        </select>
+
+        <div class="admin-actions">
+            <button id="editSaveBtn" class="btn-primary">Save Changes</button>
+            <button id="editCancelBtn" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

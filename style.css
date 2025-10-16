@@ -1,0 +1,679 @@
+:root {
+  --bg: #ffffff;
+  --text: #111;
+  --accent: #32cd32; /* Primary Green */
+  --muted: #777;
+  --danger: #d9534f;
+  --border: #e6f6ea; /* Light border/background for contrast */
+  --card-bg: #fff;
+}
+
+body.dark-mode {
+  --bg: #121212;
+  --text: #f1f1f1;
+  --accent: #5cf25c; /* Brighter Green for Dark Mode */
+  --muted: #bbb;
+  --border: #333;
+  --card-bg: #1e1e1e;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Basic layout */
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column; 
+}
+
+main {
+    flex-grow: 1; 
+}
+
+/* --- SITE HEADER STYLES (With Image Background) --- */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* IMAGE BACKGROUND & OVERLAY */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://i.postimg.cc/XNrN32Vd/pexels-cenali-2733918.jpg');
+  background-size: cover;
+  background-position: center 40%;
+  background-repeat: no-repeat;
+  
+  color: #fff; 
+  padding: 15px 20px;
+  flex-wrap: wrap;
+  min-height: 120px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Ensure all header content text is bright and readable over the image */
+.site-header a, .site-header button, .site-header .brand-title, .site-header .brand-sub {
+    color: #fff !important;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+  flex-grow: 1;
+  max-width: 400px;
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.site-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.brand-title {
+  font-size: 1.2em;
+  font-weight: 700;
+}
+
+.brand-sub {
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+/* --- SEARCH INPUT STYLES --- */
+.search {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #aaa; 
+  flex-grow: 1;
+  background: #fff; 
+  color: var(--text); 
+}
+
+.search::placeholder {
+    color: #999;
+}
+
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.3s;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary, .btn-secondary, .whatsapp-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-secondary {
+  background: #f1f1f1;
+  color: var(--text);
+}
+
+body.dark-mode .btn-secondary {
+    background: #333;
+    color: #fff;
+}
+
+/* Header Search Button Style */
+.site-header .btn-secondary {
+    background: transparent;
+    border: 2px solid #fff;
+    color: #fff; 
+    padding: 8px 13px; 
+}
+
+.whatsapp-btn {
+  width: 100%;
+  background: #25d366;
+  color: #fff;
+  margin-top: 15px;
+  font-size: 1.1em;
+}
+
+.btn-primary:hover, .btn-secondary:hover, .whatsapp-btn:hover {
+  opacity: 0.8;
+}
+
+/* Floating Cart Button */
+.cart-floating {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--accent);
+    color: #fff;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    font-weight: 700;
+    cursor: pointer;
+    z-index: 99;
+    transition: transform 0.2s;
+}
+.cart-floating:hover {
+    transform: scale(1.05);
+}
+
+
+/* Main Content Layout */
+.hero {
+    background: var(--border);
+    padding: 40px 20px;
+    margin-bottom: 20px;
+}
+.hero-left {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.hero h1 {
+    font-size: 2.5em;
+    margin-top: 0;
+    color: var(--accent);
+}
+.hero p {
+    font-size: 1.1em;
+    color: var(--muted);
+}
+.hero-ctas {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+.hero .trust {
+    font-size: 0.9em;
+    color: var(--muted);
+}
+.hero .trust a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.container, .categories, .products {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px 20px;
+}
+.categories {
+    padding-top: 0;
+}
+.categories h3, .products h2 {
+    color: var(--text);
+    margin-bottom: 15px;
+    border-left: 5px solid var(--accent);
+    padding-left: 10px;
+}
+
+/* Category Filter */
+.category-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.category-pill {
+  padding: 8px 15px;
+  border-radius: 20px;
+  background: var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.2s, color 0.2s;
+}
+
+.category-pill:hover,
+.category-pill.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* --- PRODUCT GRID --- */
+.product-grid {
+  /* PC (Default): 3 columns */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 20px;
+}
+
+/* Tablet (max 992px): 2 columns */
+@media (max-width: 992px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Mobile (max 576px): 1 column */
+@media (max-width: 576px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+    .hero h1 {
+        font-size: 2em;
+    }
+    .hero-ctas {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+/* --- END PRODUCT GRID FIX --- */
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+body.dark-mode .card {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.card h4 {
+  margin: 10px 15px 5px;
+  font-size: 1.2em;
+  color: var(--text);
+}
+
+.card .desc {
+  margin: 0 15px;
+  font-size: 0.9em;
+  color: var(--muted);
+}
+/* Highlight min_qty hint for better visibility */
+.card div[style*="font-size: 0.8em"] {
+    color: var(--accent); 
+    font-weight: 600;
+}
+
+.card .price {
+  margin: 10px 15px;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 1.1em;
+}
+
+.card .actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px 15px;
+  gap: 10px;
+}
+
+.small-btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+
+.add-btn {
+  flex-grow: 1;
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.danger-btn {
+  background: var(--danger);
+  color: #fff;
+  border-color: var(--danger);
+}
+
+/* Admin Specific Buttons */
+.edit-btn {
+  background: #f0ad4e;
+  color: #fff;
+  border-color: #f0ad4e;
+}
+
+/* --- GORGEOUS CART & POPUP STYLES --- */
+.popup {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(5px); 
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.popup-panel {
+  background: var(--card-bg); 
+  border-radius: 12px;
+  padding: 25px; 
+  width: 90%;
+  max-width: 420px; 
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); 
+}
+/* This targets the EDIT modal specifically, matching cart modal style */
+.admin-edit-panel {
+    max-width: 420px; /* Same as cart panel */
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 800;
+  font-size: 1.2em;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--accent); 
+  cursor: grab; /* Added grab cursor for draggable header */
+}
+
+#closeCart, #editCancelCloseBtn {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+
+#closeCart:hover, #editCancelCloseBtn:hover {
+  color: var(--danger);
+}
+
+.cart-items {
+  max-height: 300px; 
+  overflow-y: auto;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.cart-item {
+  border-bottom: 1px dashed var(--border);
+  padding: 12px 0;
+}
+
+/* New styles for cart quantity controls */
+.cart-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cart-qty-controls .qty-btn {
+    background: var(--border);
+    color: var(--text);
+    border: 1px solid var(--muted);
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    line-height: 1;
+    border-radius: 4px;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.cart-qty-controls .qty-btn:hover {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+}
+
+.cart-item input[type="number"] {
+    /* Adjusted width to accommodate new buttons */
+    width: 60px !important; 
+    padding: 6px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    text-align: center;
+    background: var(--bg); 
+    color: var(--text);
+    font-weight: 600;
+}
+
+.cart-qty-controls .remove-btn {
+    /* Ensures remove button is smaller and aligned */
+    padding: 6px 8px; 
+    margin-left: 5px;
+    font-size: 0.8em;
+}
+
+.cart-total {
+  margin: 15px 0 10px;
+  padding-top: 10px;
+  font-size: 1.3em;
+  font-weight: 900;
+  color: var(--accent); 
+  text-align: right;
+  border-top: 1px solid var(--border);
+}
+
+/* --- ADMIN PANEL STYLES (ADD PRODUCT - DRAGGABLE) --- */
+.admin-panel {
+  position: fixed;
+  top: 50px;
+  left: 50px;
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 20px;
+  width: 300px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  display: none; /* Controlled by JS */
+  flex-direction: column;
+  gap: 10px;
+  cursor: grab; /* Shows that the panel is draggable */
+  z-index: 999999; 
+}
+
+.admin-panel h4 {
+    margin: 0 0 10px 0;
+    color: var(--accent);
+    cursor: grab; /* Explicitly set grab cursor on title for drag handle */
+}
+
+/* General Input Styling for Admin Panel, Edit Modal, and CartNote */
+.admin-panel input, .admin-panel select,
+.admin-edit-panel input:not([type="hidden"]), .admin-edit-panel select,
+#cartNote { 
+    width: 100%; 
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    color: var(--text);
+    box-sizing: border-box; 
+    font-family: inherit; 
+}
+
+/* CartNote specific overrides */
+#cartNote {
+    margin-top: 15px;
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Ensure number inputs are styled correctly (FIXED LINTER ERROR) */
+input[type="number"] {
+    -moz-appearance: textfield; /* Firefox */
+    appearance: textfield; /* Standard property for Firefox fix */
+}
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    appearance: none; /* Standard property for Webkit fix */
+    margin: 0; 
+}
+
+
+.admin-panel .upload-label,
+.admin-edit-panel .upload-label {
+    display: block;
+    padding: 10px;
+    border: 1px dashed var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    margin-top: 10px;
+    background: var(--card-bg);
+}
+
+.admin-panel input[type="file"],
+.admin-edit-panel input[type="file"] {
+    display: none;
+}
+
+/* Fix for Admin Actions layout and JS-added logout button */
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap; /* Allows buttons to wrap and stack */
+    justify-content: space-between; 
+    gap: 10px;
+    margin-top: 15px;
+}
+
+/* Explicitly target the JS-added logout button (if needed, but flex-wrap should handle it) */
+#adminLogoutBtn {
+    width: 100%; /* Force the logout button to take a new row for better separation */
+    margin-top: 8px; /* Maintain small separation from other buttons */
+}
+
+
+/* --- COOL FOOTER STYLES --- */
+.site-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a1a; 
+    color: #f1f1f1; 
+    border-top: 5px solid var(--accent); 
+    padding: 30px 20px;
+    text-align: left;
+    font-size: 1em;
+    font-weight: 300;
+    margin-top: 40px;
+}
+
+body.dark-mode .site-footer {
+    background: #000000;
+}
+
+.site-footer a {
+    color: var(--accent); 
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.2s, text-shadow 0.2s;
+}
+
+.site-footer a:hover {
+    color: #ffffff; 
+    text-shadow: 0 0 5px var(--accent);
+}
+
+/* Responsive adjustments for site structure */
+@media (max-width: 768px) {
+  .site-header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px;
+  }
+  .header-center {
+    width: 100%;
+    margin-top: 15px;
+    order: 3;
+    max-width: 100%;
+  }
+  .header-left {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .header-right {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+  .category-list {
+    justify-content: flex-start;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 5px;
+  }
+  .category-pill {
+    flex-shrink: 0;
+  }
+  /* Fix Admin Panel position on mobile */
+  .admin-panel {
+      width: 90%;
+      top: 5%;
+      left: 5%;
+      right: 5%;
+      margin: 0 auto;
+      transform: none !important; /* Disable JS transform for fixed position */
+      cursor: default; 
+  }
+  .site-footer {
+      flex-direction: column;
+      text-align: center;
+      gap: 10px;
+  }
+}
+
+@media (max-width: 600px) {
+    .site-footer {
+        padding: 20px 10px;
+    }
+}
