@@ -1,4 +1,4 @@
-// FINAL fixed script.js (V5 - URL Input for BOTH Admin Add & Admin Edit, with better URL guidance)
+// FINAL fixed script.js (V6 - Hybrid Image Input with Base64 File Upload)
 (() => {
   const WA_PHONE = "8801897547953"; 
 
@@ -12,9 +12,14 @@
 
   let selectedCategory = "সব"; 
 
+  // Image data holders for Base64 during Admin Add/Edit process
+  let adminNewImage = null; 
+  let editNewImage = null;
+
   // fallback default products if none
   if (!products || products.length === 0) {
     products = [
+      // IMPORTANT: Use only i.ibb.co direct links for reliability
       { id: 1, name_bn: "আলু", name_en: "Potato", price: 80, image: "https://i.ibb.co/0cF1bVx/potato.jpg", desc: "তাজা দেশি আলু", category: "সবজি", min_qty: 5 },
       { id: 2, name_bn: "পেঁয়াজ", name_en: "Onion", price: 85, image: "https://i.ibb.co/5nbb2L3/onion.jpg", desc: "ঝাঁজালো পেঁয়াজ", category: "সবজি", min_qty: 5 },
       { id: 3, name_bn: "রসুন", name_en: "Garlic", price: 180, image: "https://i.ibb.co/SBgtzLt/garlic.jpg", desc: "মজাদার রসুন", category: "মশলা", min_qty: 1 },
@@ -69,6 +74,84 @@
 
   function placeholderImage() {
     return "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300'><rect width='100%' height='100%' rx='12' fill='#f4fff6'/></svg>`);
+  }
+  
+  // Base64 Reader Helper
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      if (!file) {
+        resolve(null);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // --- ADMIN IMAGE HANDLING FUNCTIONS (Base64) ---
+  function adminImageChanged(event) {
+    const file = event.target.files[0];
+    const preview = qs("admin_image_preview");
+    
+    if (file) {
+      readFileAsBase64(file).then(base64 => {
+        adminNewImage = base64;
+        preview.src = base64;
+        preview.style.display = "block";
+      }).catch(() => {
+        alert("Could not read file.");
+        adminNewImage = null;
+        preview.style.display = "none";
+      });
+    } else {
+      adminNewImage = null;
+      preview.style.display = "none";
+    }
+  }
+
+  function editImageChanged(event) {
+    const file = event.target.files[0];
+    const preview = qs("edit_image_preview");
+    
+    if (file) {
+      readFileAsBase64(file).then(base64 => {
+        editNewImage = base64; // Store Base64 data
+        preview.src = base64;
+        preview.style.display = "block";
+        // Clear the URL input to ensure Base64 takes priority on save
+        qs("edit_image_url").value = ""; 
+      }).catch(() => {
+        alert("Could not read file.");
+        editNewImage = null;
+        preview.style.display = "none";
+      });
+    } else {
+      editNewImage = null;
+    }
+  }
+
+  // Preview handler for URL input only (Base64 is handled by the file input)
+  function editImageUrlChanged() {
+    const urlInput = qs("edit_image_url");
+    const fileInput = qs("edit_image_file");
+    const preview = qs("edit_image_preview");
+    
+    // Clear file input and Base64 data if the URL is being used
+    if (urlInput.value.trim()) {
+      editNewImage = null;
+      if (fileInput) fileInput.value = ""; // Clear file input
+    }
+    
+    const url = urlInput.value.trim();
+    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
+        preview.src = url;
+        preview.style.display = "block";
+    } else if (!url) {
+        // If URL is empty, hide preview unless a file is selected
+        if (!editNewImage) preview.style.display = "none";
+    }
   }
 
   // CATEGORY RENDER 
@@ -206,12 +289,17 @@
     toast((lang === "bn") ? "🗑️ পণ্যটি মুছে ফেলা হয়েছে" : "Product removed");
   }
 
-  // ADMIN EDIT LOGIC (UPDATED for URL input)
+  // ADMIN EDIT LOGIC (UPDATED for HYBRID input)
   function closeEdit() {
     const popup = qs("productEditPopup");
     if (popup) {
+        // Clear temp image data
+        editNewImage = null;
+        const fileInput = qs("edit_image_file");
+        if (fileInput) fileInput.value = ""; 
         const urlInput = qs("edit_image_url");
         if (urlInput) urlInput.value = ""; 
+        
         popup.style.display = "none";
         popup.setAttribute("aria-hidden", "true");
         // Reset custom position if it was dragged
@@ -248,7 +336,16 @@
     const pr = parseFloat(qs("edit_price").value.trim());
     const minQty = parseFloat(qs("edit_min_qty").value.trim());
     const cat = qs("edit_category").value;
-    const imageURL = qs("edit_image_url").value.trim(); // Get URL
+    
+    // Determine the image source: 1. New Base64, 2. URL Input, 3. Existing
+    let finalImage = p.image;
+    const imageURL = qs("edit_image_url").value.trim();
+    
+    if (editNewImage) {
+        finalImage = editNewImage; // Priority 1: New File Upload (Base64)
+    } else if (imageURL) {
+        finalImage = imageURL; // Priority 2: New URL pasted
+    }
     
     if (!bn || isNaN(pr) || pr <= 0) {
         alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
@@ -258,9 +355,8 @@
         alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
         return;
     }
-    if (!imageURL) {
-        // Clear guidance for the admin
-        alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন (যেমন ImgBB বা PostImage থেকে)" : "Please provide a public, direct image link (e.g., from ImgBB or PostImage).");
+    if (!finalImage) {
+        alert((lang === "bn") ? "পণ্যর ছবি দরকার" : "Product image is required.");
         return;
     }
 
@@ -269,7 +365,7 @@
     p.price = pr;
     p.min_qty = minQty;
     p.category = cat;
-    p.image = imageURL; 
+    p.image = finalImage; 
 
     finalizeSave();
   }
@@ -282,6 +378,11 @@
         return;
     }
     
+    // Reset temp data
+    editNewImage = null;
+    const fileInput = qs("edit_image_file");
+    if (fileInput) fileInput.value = ""; 
+    
     // Fill popup with product data
     qs("edit_product_id").value = p.id;
     qs("edit_name_bn").value = p.name_bn || "";
@@ -290,9 +391,12 @@
     qs("edit_min_qty").value = p.min_qty;
     qs("edit_category").value = p.category || "অন্যান্য";
     
-    // Fill the new URL input
+    // Set image URL input: use URL if it looks like one, otherwise leave blank
     const urlInput = qs("edit_image_url");
-    if (urlInput) urlInput.value = p.image || ""; 
+    if (urlInput) {
+        const isUrl = p.image && (p.image.startsWith('http') || p.image.startsWith('https'));
+        urlInput.value = isUrl ? p.image : "";
+    }
 
     const preview = qs("edit_image_preview");
     if (p.image) {
@@ -469,54 +573,28 @@
     toast((lang === "bn") ? "অর্ডার WhatsApp-এ পাঠানো হয়েছে!" : "Order sent to WhatsApp!");
   }
 
-  // function to handle image URL preview
-  function handleImageUrlChange(urlInputId, previewId) {
-    const urlInput = qs(urlInputId);
-    const preview = qs(previewId);
-    if (!urlInput || !preview) return;
-
-    const url = urlInput.value.trim();
-    if (url && (url.startsWith('http') || url.startsWith('data:'))) {
-        preview.src = url;
-        preview.style.display = "block";
-    } else {
-        preview.src = "";
-        preview.style.display = "none";
-    }
-  }
-
-  // ADMIN: image preview handlers
-  function adminImageUrlChanged() {
-    handleImageUrlChange("admin_image_url", "admin_image_preview");
-  }
-  function editImageUrlChanged() {
-    handleImageUrlChange("edit_image_url", "edit_image_preview");
-  }
-
-
-  // ADMIN: add product
+  // ADMIN: add product (Uses Base64)
   function adminAdd() {
     const nameBnEl = qs("admin_name_bn");
     const nameEnEl = qs("admin_name_en");
     const priceEl = qs("admin_price");
     const minQtyEl = qs("admin_min_qty"); 
     const categoryEl = qs("admin_category");
-    const imageUrlEl = qs("admin_image_url"); 
+    const fileEl = qs("admin_image_file"); 
     
-    if (!nameBnEl || !priceEl || !minQtyEl || !imageUrlEl) return alert("Admin fields missing in HTML structure");
+    if (!nameBnEl || !priceEl || !minQtyEl || !fileEl) return alert("Admin fields missing in HTML structure");
 
     const bn = nameBnEl.value.trim();
     const en = (nameEnEl && nameEnEl.value.trim()) || bn;
     const pr = parseFloat(priceEl.value.trim()); 
     const minQty = parseFloat(minQtyEl.value.trim()); 
     const cat = (categoryEl && categoryEl.value) || "অন্যান্য";
-    const imageSrc = imageUrlEl.value.trim(); 
+    const imageSrc = adminNewImage; 
 
     if (!bn || isNaN(pr) || pr <= 0) return alert((lang === "bn") ? "সঠিক নাম ও মূল্য দিন" : "Please provide valid name and price");
     if (isNaN(minQty) || minQty <= 0) return alert((lang === "bn") ? "সঠিক ন্যূনতম পরিমাণ দিন" : "Please provide valid minimum quantity");
     
-    // Clear guidance for the admin
-    if (!imageSrc) return alert((lang === "bn") ? "পাবলিক ইমেজ লিঙ্ক দিন (যেমন ImgBB বা PostImage থেকে)" : "Please provide a public, direct image link (e.g., from ImgBB or PostImage).");
+    if (!imageSrc) return alert((lang === "bn") ? "ছবি আপলোড করুন" : "Please upload an image.");
 
     const id = Date.now();
 
@@ -545,7 +623,8 @@
     nameEnEl.value = "";
     priceEl.value = "";
     minQtyEl.value = "1"; 
-    imageUrlEl.value = ""; 
+    fileEl.value = ""; // Clear file input
+    adminNewImage = null; // Clear Base64 data
     const preview = qs("admin_image_preview");
     if (preview) {
       preview.style.display = "none";
@@ -690,7 +769,7 @@
     // admin panel controls 
     const adminAddBtn = qs("adminAddBtn");
     const adminCloseBtn = qs("adminClose");
-    const adminUrlInput = qs("admin_image_url"); 
+    const adminFile = qs("admin_image_file");
     const adminPanel = qs("adminPanel");
     const adminPanelFooter = qs("adminPanelFooter");
 
@@ -701,19 +780,20 @@
         adminPanel.style.left = ''; adminPanel.style.top = ''; adminPanel.style.transform = '';
       }
     });
-    // Wire up Admin ADD URL input for preview
-    if (adminUrlInput) adminUrlInput.addEventListener("input", adminImageUrlChanged);
+    // Wire up Admin ADD File input
+    if (adminFile) adminFile.addEventListener("change", adminImageChanged);
     
     // New edit panel controls 
     const editSaveBtn = qs("editSaveBtn");
     const editCancelBtn = qs("editCancelBtn");
     const editCancelCloseBtn = qs("editCancelCloseBtn");
+    const editFile = qs("edit_image_file");
     const editUrlInput = qs("edit_image_url");
 
     if (editSaveBtn) editSaveBtn.addEventListener("click", saveEdit);
     if (editCancelBtn) editCancelBtn.addEventListener("click", closeEdit);
     if (editCancelCloseBtn) editCancelCloseBtn.addEventListener("click", closeEdit);
-    // Wire up Admin EDIT URL input for preview
+    if (editFile) editFile.addEventListener("change", editImageChanged);
     if (editUrlInput) editUrlInput.addEventListener("input", editImageUrlChanged);
 
 
@@ -743,6 +823,7 @@
   window.openCart = openCart;
   window.closeCart = closeCart;
   window.renderProducts = renderProducts;
-  window.adminImageUrlChanged = adminImageUrlChanged; // Expose global handlers
+  window.adminImageChanged = adminImageChanged; // Expose global handlers
+  window.editImageChanged = editImageChanged;
   window.editImageUrlChanged = editImageUrlChanged;
 })();
